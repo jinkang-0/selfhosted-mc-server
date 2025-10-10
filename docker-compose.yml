@@ -27,8 +27,6 @@ services:
       BACKUP_INTERVAL: "1d"
       BACKUP_METHOD: tar
       RCON_HOST: mc
-      POST_BACKUP_SCRIPT_FILE: /post-backup.sh
     volumes:
       - ./data:/data:ro
       - ./backups:/backups
-      - ./post-backup.sh:/post-backup.sh:ro
