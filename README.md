@@ -16,7 +16,7 @@ A Minecraft server configured for Blueprint.
 
 ### 2. Setup Reverse Proxy
 
-If you can port-forward the machine that will run the server, feel free to use port-forwarding and [skip to the next step](#3. Configure RClone (optional)).
+If you can port-forward the machine that will run the server, feel free to use port-forwarding and [skip to the next step](https://github.com/jinkang-0/mc-server-bp#3-configure-rclone).
 
 If you cannot port-forward your machine (e.g. cannot access router), this step is for you.
 
