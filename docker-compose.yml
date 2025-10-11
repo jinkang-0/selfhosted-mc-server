@@ -12,6 +12,7 @@ services:
     environment:
       EULA: "TRUE"
       MOTD: "Blueprint Minecraft Server on 1.21.10"
+      VERSION: 1.21.10
       ICON: /icon.png
       MAX_MEMORY: 4G
     volumes:
@@ -27,8 +28,17 @@ services:
         condition: service_healthy
     environment:
       BACKUP_INTERVAL: "1d"
-      BACKUP_METHOD: tar
+      BACKUP_METHOD: rclone
       RCON_HOST: mc
+      RCLONE_REMOTE: remote
+      RCLONE_COMPRESS_METHOD: gzip
+      DEST_DIR: /backup
+      RCLONE_DEST_DIR: /mc-backups
     volumes:
       - ./data:/data:ro
       - ./backups:/backups
+      - rclone-config:/config/rclone
+
+volumes:
+  rclone-config:
+    external: true
