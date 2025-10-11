@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ./.env
+source ../.env
 
 # obtain instance external IP
 PUBLIC_IP=$(curl https://compute.googleapis.com/compute/v1/projects/${PROJECT_ID}/zones/${ZONE}/instances/${INSTANCE_NAME} -H "Authorization: Bearer $(gcloud auth print-access-token)" | jq '.networkInterfaces[0].accessConfigs[0].natIP')
@@ -12,7 +12,7 @@ curl -X PATCH "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records
 	-d '{"content": '$PUBLIC_IP'}'
 
 # update frpc endpoint
-sed 's/serverAddr = "[^"]+"/serverAddr = "${PUBLIC_IP}"/' ./frp/frpc.toml
+sed 's/serverAddr = "[^"]+"/serverAddr = "${PUBLIC_IP}"/' ../frp/frpc.toml
 
 # update systemd service
 sudo systemctl daemon-reload

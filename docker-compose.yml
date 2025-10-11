@@ -1,6 +1,7 @@
 services:
   mc:
     image: itzg/minecraft-server
+    container_name: "mc-server"
     restart: unless-stopped
     tty: true
     stdin_open: true
@@ -19,6 +20,7 @@ services:
 
   backup:
     image: itzg/mc-backup
+    container_name: "mc-backup"
     restart: unless-stopped
     depends_on:
       mc:
