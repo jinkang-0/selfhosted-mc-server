@@ -16,43 +16,26 @@ A Minecraft server configured for Blueprint.
 
 ### 2. Setup Reverse Proxy
 
-If you can port-forward the machine that will run the server, feel free to use port-forwarding and [skip to the next step](https://github.com/jinkang-0/mc-server-bp#3-configure-rclone).
+If you can port-forward the machine that will run the Minecraft server, feel free to use port-forwarding and [skip to the next step](https://github.com/jinkang-0/mc-server-bp#3-configure-rclone).
 
 If you cannot port-forward your machine (e.g. cannot access router), this step is for you.
 
-**Setup Reverse Proxy Server**
+#### Setup Reverse Proxy Server
 
-Your reverse proxy server will be hosted on the machine that is accessible to the public. To setup the reverse proxy server, first install [frp](https://github.com/fatedier/frp/releases) on this machine. Choose the binary that matches your machine's architecture.
+Your reverse proxy server will be hosted on the machine that is accessible to the public. To setup the reverse proxy server, first install [frp](https://github.com/fatedier/frp/releases) on that machine. Choose the binary that matches the machine architecture.
 
-After unzipping the release tar.gz file, you should have a `frps` binary and a `frps.toml` file. You shouldn't need to modify the `frps.toml` file, but take note of the `bindPort` number specified. By default, it should be 7000. You will need this to configure the reverse proxy client on the Minecraft server machine.
+After unzipping the release tar.gz file, you should have a `frps` binary and a `frps.toml` file (alongside `frpc` and `frpc.toml` - they won't be used on this machine). You shouldn't need to modify the `frps.toml` file, but take note of the `bindPort` number specified. By default, it should be 7000. You will need this to configure the reverse proxy client on the Minecraft server machine.
 
 You can start the server using this command:
 ```sh
-./frps -c frps.toml
+./frps -c ./frps.toml
 ```
 
-If your reverse proxy machine happens to use Linux, it's recommended to setup a SystemD service to always restart this server if the system reboots. You can configure a service by creating a service file like `frp.service` in `/etc/systemd/system/`.
-
-Here is a sample service file content:
-```service
-[Unit]
-Description=Fast Reverse Proxy server
-After=network.target
-
-[Service]
-WorkingDirectory=/home/username/frp
-ExecStart=/bin/sh -c "./frps -c frps.toml"
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-**Setup Reverse Proxy Client**
+#### Setup Reverse Proxy Client
 
 On your machine that will run the Minecraft server, you will also want to install [frp](https://github.com/fatedier/frp/releases). Ensure the binary matches your machine's computer architecture.
 
-Now, you'll want to configure the `frpc.toml` file to something like this:
+After unzipping the tar.gz file, you should have a `frpc` binary and `frpc.toml` file (`frps` and `frps.toml` won't be used here). You'll want to configure the `frpc.toml` file to something like this:
 
 ```toml
 serverAddr = "x.x.x.x"
@@ -66,12 +49,12 @@ localPort = 25565
 remotePort = 25565
 ```
 
-Replace the `serverAddr` field with the IP address of the machine hosting the reverse proxy server (e.g. the machine that is accessible to the public).
+Replace the `serverAddr` field with the IP address of the machine hosting the reverse proxy server (e.g. the machine that is accessible to the public). If you changed the `bindPort` on the reverse proxy server, make sure it matches the `serverPort` in this file.
 
 Next, start the reverse proxy client with this command:
 
 ```sh
-./frpc -c frpc.toml
+./frpc -c ./frpc.toml
 ```
 
 You should be able to see a message in the client that the connection was successful, and likewise in the server.
@@ -79,6 +62,29 @@ You should be able to see a message in the client that the connection was succes
 If you are receiving timed out attempts or connection failures, make sure you check the network firewall of your reverse proxy server.
 
 If you are running the reverse proxy server on a VM in GCP, you need to add new firewall rules to allow TCP on port 7000 and TCP on port 25565 as ingress from any source IP address through to your VM. After adding the rule, make sure the network tags assigned to the rule is applied to VM instance that corresponds to your reverse proxy server.
+
+#### SystemD Service (optional)
+
+If your reverse proxy machine happens to use Linux, it's recommended to setup a SystemD service to always restart this server if the system reboots. You can configure a service by creating a service file like `frp.service` in `/etc/systemd/system/`.
+
+Here is a sample service file content for the server:
+```service
+[Unit]
+Description=Fast Reverse Proxy server
+After=network.target
+
+[Service]
+WorkingDirectory=/home/username/frp
+ExecStart=/bin/sh -c "./frps -c ./frps.toml"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Depending on where you placed the folder with the `frp` binaries, you will likely want to update the `WorkingDirectory` path.
+
+You should also create a separate version for the reverse proxy client. In that one, ensure you change the `ExecStart` command to run `./frpc -c ./frpc.toml` instead of `frps`.
 
 ### 3. Configure RClone
 
@@ -111,7 +117,7 @@ For Minecraft to recognize it as a valid server, we must setup a SRV record on a
 
 Most DNS that come with domain name registrars should be able to achieve this. However, if your's don't, Cloudflare offers a great DNS for free. You just have to follow the instructions on Cloudflare to connect the two services.
 
-There are two records to setup. The first is an A record. The name can be anything (e.g. minecraft.domain.tld), but the value must be the IP address of the reverse proxy server (or the actual server, if port-forwarding). If your DNS offers the ability to proxy the A record, make sure you turn that off for this record, as it can mess with how it gets received.
+There are two records to setup. The first is an A record. The name can be anything (e.g. `minecraft.domain.tld`), but the value must be the IP address of the reverse proxy server (or the actual server, if port-forwarding). If your DNS offers the ability to proxy the A record, make sure you turn that off for this record, as it can mess with how it gets received.
 
 The second is a SRV record, with the name `_minecraft._tcp.subdomain`. You can replace `subdomain` with whatever you like - this will appear as the server address when inputting it in Minecraft, as `subdomain.domain.tld`. The port must be 25565, and the target must be the value of the A record that you just setup (e.g. `minecraft.domain.tld`).
 
@@ -121,7 +127,7 @@ Finally, we can start the Minecraft server.
 
 If you'd like, you can configure any of the server properties in the `docker-compose.yml` file. Refer to the Minecraft server Docker image [documentation](https://docker-minecraft-server.readthedocs.io/en/latest/configuration/server-properties/) for syntax details.
 
-One crucial thing to set is the `OPS` environment variable. You may want to give yourself operator privileges to change gamerules and debug issues in the server.
+Note: you may want to set the `OPS` environment variable. You may want to give yourself operator privileges to change gamerules, debug issues in the server, or add players to the whitelist.
 
 When you're ready to start, run:
 
@@ -139,4 +145,18 @@ docker compose logs
 # follow logs
 docker compose logs -f
 ```
+
+## Further Configuration
+
+Feel free to refer to the documentations for configurations:
+- [Docker Minecraft Server](https://docker-minecraft-server.readthedocs.io/en/latest)
+    - [Modifying server properties](https://docker-minecraft-server.readthedocs.io/en/latest/configuration/server-properties/)
+    - [Setting Minecraft versions](https://docker-minecraft-server.readthedocs.io/en/latest/versions/minecraft/)
+- [Docker Minecraft Backups](https://github.com/itzg/docker-mc-backup)
+
+Some ideas for customization:
+- Adding mods and plugins
+- Adding server resource packs or data packs
+- Updating frequency of auto-backup intervals
+- Configuring max memory of server
 
