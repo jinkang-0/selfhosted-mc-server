@@ -148,6 +148,8 @@ docker compose logs -f
 
 ## Further Configuration
 
+### Customizations
+
 Feel free to refer to the documentations for configurations:
 - [Docker Minecraft Server](https://docker-minecraft-server.readthedocs.io/en/latest)
     - [Modifying server properties](https://docker-minecraft-server.readthedocs.io/en/latest/configuration/server-properties/)
@@ -159,4 +161,14 @@ Some ideas for customization:
 - Adding server resource packs or data packs
 - Updating frequency of auto-backup intervals
 - Configuring max memory of server
+
+### Scripts
+
+A few bash scripts come included with this repository.
+
+The `backup.sh` script simply runs RClone to sync to the remote repository manually, without triggering a manual backup. This requires the local machine to have RClone configured - if you only configured RClone on the Docker container volume, you may need to do this again.
+
+The `service-sync.sh` script requires some context. My setup uses a VM instance on GCP for the reverse proxy server. This script is used to fetch the external IP address of the instance and update both the frp server address and the Cloudflare DNS record to keep the service in sync.
+
+The `start-tunnel.sh` script does as the name suggests - it simply runs the `frpc` binary to start the reverse proxy client (or tunnel). This can also be the exec target of the SystemD service.
 
