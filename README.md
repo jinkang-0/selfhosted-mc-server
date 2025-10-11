@@ -10,7 +10,7 @@ A Minecraft server configured for Blueprint.
 2. Access to a machine that can run a Minecraft server (e.g. an old laptop)
 3. Access to a machine accessible by public network (e.g. machine with portforwarded IP or cloud VPS machine)
     - This can be the same machine as (2) if you can port-forward it
-    - If you do not have one, I have [an article on setting up a free VM instance on GCP](https://www.jfang.dev/blogs/setting-up-compute-engine)
+    - If you do not have one, I have [an article on setting up a free VM instance on GCP](https://www.jfang.dev/blogs/setting-up-compute-engine), which should satisfy this purpose
 4. Access to a DNS and a domain name
     - If you do not have one, the good news is that most domain names are cheap - under $10/yr. Of course, the bad news is that it does cost money.
 
