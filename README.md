@@ -1,6 +1,6 @@
-# BP MC Server
+# Self-hosted MC Server
 
-A Minecraft server configured for Blueprint.
+A sample self-hosted Minecraft server configuration.
 
 ## Setup
 
