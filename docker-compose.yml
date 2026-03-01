@@ -13,7 +13,6 @@ services:
       EULA: "TRUE"
       MOTD: "Blueprint Minecraft Server on 1.21.10"
       VERSION: 1.21.10
-      ICON: /icon.png
       MAX_MEMORY: 4G
     volumes:
       - ./data:/data
